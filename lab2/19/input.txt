@@ -1,0 +1,8 @@
+initial_state :
+['C', 'B']
+['D']
+['E', 'A']
+goal_state:
+['C', 'B', 'D', 'A']
+[]
+['E']

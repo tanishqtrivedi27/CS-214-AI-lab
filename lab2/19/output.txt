@@ -1,0 +1,6 @@
+output state :
+['C' 'B' 'D' ]
+['E' ]
+['A' ]
+
+Goal state can't be reached
