@@ -1,0 +1,1 @@
+python 19.py $1 > output.txt
