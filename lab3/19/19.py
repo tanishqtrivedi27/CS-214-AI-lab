@@ -135,12 +135,12 @@ def main():
     file1.close()
 
     if (isEuclid == "euclidean\n"):
-        #3, 6, 0.1, 0.1, N
-        alpha=0.3
+        #3, 6, 0.1, 0.1, N use this for 100, 250
+        alpha=3
         beta=20
         rho=0.1
-        Q=1000000
-        numAnts = 5
+        Q=0.1
+        numAnts = N
         aco = AntColony(adjMatrix, numAnts, alpha, beta, rho, Q)
         aco.tspACO()
         tour = aco.bestTour
@@ -180,7 +180,6 @@ def main():
             if city2-city1 == 1 : continue
             lengthDelta = - adjMatrix[tour[city1-1]][tour[city1]] - adjMatrix[tour[city2-1]][tour[city2]] + adjMatrix[tour[city1-1]][tour[city2-1]] + adjMatrix[tour[city1]][tour[city2]]
             if (lengthDelta < 0):
-                print(lengthDelta)
                 tour[city1:city2] = tour[city2-1:city1-1:-1]
                 cost = cost + lengthDelta
                 print("The 2-edge tour length is =", cost, sep=' ')
