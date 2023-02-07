@@ -2,6 +2,10 @@ import time
 import random
 import sys
 
+"""
+    The solution of travelling salesperson problem using
+    nearest-neighbour heuristic
+"""
 def tsp(adjMatrix, n):
     i = 0
     for i in adjMatrix:
@@ -27,6 +31,9 @@ def tsp(adjMatrix, n):
 
     return tour
     
+""" 
+    Ant colony Optimization
+"""
 class Ant:
     def __init__(self, adjMatrix, pheromones, alpha, beta):
         self.currentPath = []
@@ -39,7 +46,7 @@ class Ant:
         self.currentPath.append(firstCity)
         unvisited.remove(firstCity)
 
-        while (len(unvisited) != 0):
+        while (len(self.currentPath) < N):
             i = self.currentPath[-1]
             prob = [pheromones[i][j]**alpha * (1/adjMatrix[i][j])**beta for j in unvisited]
             probSet = [j/sum(prob) for j in prob]
@@ -71,9 +78,12 @@ class AntColony:
         self.numAnts = numAnts
         self.bestTour = []
 
+    """
+        In the ant colony optimization algorithms, an artificial ant is a simple computational agent 
+        that searches for good solutions to a given optimization problem.
+    """
     def tspACO(self):
-        start = time.time()
-        while(time.time() - start < 299):
+        while(time.time() - start < 199):
             ants = []
             pheromonesDelta = [[0.0 for i in range(self.N)] for j in range(self.N)]
 
@@ -85,28 +95,32 @@ class AntColony:
                 if (ant.getCost(self.adjMatrix) < self.bestCost):
                     self.bestCost = ant.getCost(self.adjMatrix)
                     self.bestTour = ant.currentPath
-                    print(self.bestCost)
-                    print(self.bestTour, end="---------------------------------------------\n")
+                    print("The tour length is =", self.bestCost, sep=' ')
+                    print(*self.bestTour, sep=" ")
+                    print("....................................................................................................................................")
 
-                ants.sort(key=lambda x: x.getCost(self.adjMatrix))
-
+            ants.sort(key=lambda x: x.getCost(self.adjMatrix))
+            """ 
+                computation of pheromone delta
+            """
             for c in ants[:self.KBest]:
                 for i, v in enumerate(c.currentPath):
                     nextOne = c.currentPath[(i+1)%self.N]
                     pheromonesDelta[v][nextOne] += self.Q/self.adjMatrix[v][nextOne]
-
+            """ 
+                pheromone update
+            """
             for i in range(self.N):
                 for j in range(self.N):
                     self.pheromones[i][j] = (1-self.rho)*self.pheromones[i][j] + pheromonesDelta[i][j]
-
-
+     
 
 def main():
-    # start = time.time()
     file1 = open(sys.argv[1], 'r')
-    file1.readline()
+    isEuclid = file1.readline()
     N = int(file1.readline())
     coordinates = []
+
     for i in range(N):
         line = file1.readline()
         list2 = line.split()
@@ -118,31 +132,61 @@ def main():
         list2 = line.split()
         list2 = [float(x) for x in list2]
         adjMatrix.append(list2)
-
     file1.close()
-    '''
-    tour = tsp(adjMatrix, n)
-    file2 = open(r"output.txt", "w")
-    cost  = 0
-    for i in tour:
-        k, j = i
-        cost = cost + j
-        file2.write(f"{k} {j}\n")
-    file2.close()
-    end = time.time()
-    print((end-start) * 10**3, "ms")
-    print(cost)
-    '''
-    alpha=3
-    beta=3
-    rho=0.1
-    Q=0.1
-    numAnts = N
-    aco = AntColony(adjMatrix, numAnts, alpha, beta, rho, Q)
-    aco.tspACO()
-    # print(ant.currentPath)
-    # print(ant.getCost())
 
+    if (isEuclid == "euclidean\n"):
+        #3, 6, 0.1, 0.1, N
+        alpha=0.3
+        beta=20
+        rho=0.1
+        Q=1000000
+        numAnts = 5
+        aco = AntColony(adjMatrix, numAnts, alpha, beta, rho, Q)
+        aco.tspACO()
+        tour = aco.bestTour
+
+    elif (isEuclid == "noneuclidean\n"):
+        alpha=5
+        beta=20
+        rho=0.05
+        Q=0.05
+        numAnts = N//4
+        aco = AntColony(adjMatrix, numAnts, alpha, beta, rho, Q)
+        aco.tspACO()
+        tour = aco.bestTour
+
+
+    """
+        2-opt
+        2-edge exchange
+        The main idea behind it is to take a route that crosses over itself and reorder it so that it does not. 
+        A complete 2-opt local search will compare every possible valid combination of the swapping mechanism.
+    """
+    cost = aco.bestCost
+
+    for city1 in range(1, N-2): #len(tour) - 2 = 98
+        for city2 in range(city1+1, N):
+            if city2-city1 == 1 : continue
+            lengthDelta = - adjMatrix[tour[city1-1]][tour[city1]] - adjMatrix[tour[city2-1]][tour[city2]] + adjMatrix[tour[city1-1]][tour[city2-1]] + adjMatrix[tour[city1]][tour[city2]]
+            if (lengthDelta < 0):
+                tour[city1:city2] = tour[city2-1:city1-1:-1]
+                cost = cost + lengthDelta
+                print("The 2-edge tour length is =", cost, sep=' ')
+                print(tour)
+                print("....................................................................................................................................")
+
+    for city1 in range(1, N-2): #len(tour) - 2 = 98
+        for city2 in range(city1+1, N):
+            if city2-city1 == 1 : continue
+            lengthDelta = - adjMatrix[tour[city1-1]][tour[city1]] - adjMatrix[tour[city2-1]][tour[city2]] + adjMatrix[tour[city1-1]][tour[city2-1]] + adjMatrix[tour[city1]][tour[city2]]
+            if (lengthDelta < 0):
+                print(lengthDelta)
+                tour[city1:city2] = tour[city2-1:city1-1:-1]
+                cost = cost + lengthDelta
+                print("The 2-edge tour length is =", cost, sep=' ')
+                print(tour)
+                print("....................................................................................................................................")
 
 if __name__ == "__main__":
+    start = time.time()
     main()
