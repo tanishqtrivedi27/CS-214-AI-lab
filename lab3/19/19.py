@@ -137,7 +137,8 @@ def main():
     if (isEuclid == "euclidean\n"):
         #3, 6, 0.1, 0.1, N use this for 100, 250
         alpha=3
-        beta=20
+        if N > 200 : beta = 20
+        else : beta = 6
         rho=0.1
         Q=0.1
         numAnts = N
