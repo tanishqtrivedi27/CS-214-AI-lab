@@ -97,7 +97,46 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    explored = set()
+    startNode = problem.getStartState()
+    cost = {}
+    parent = {}
+    parent[startNode] = (None, None) # parent, direction
+    cost[startNode] = 0
+    frontier.push(startNode, cost[startNode])
+
+    while (not frontier.isEmpty()):
+        n = frontier.pop()
+
+        if n in explored:
+            continue
+        explored.add(n)
+        if (problem.isGoalState(n)):
+            """
+                RECONSTRUCT PATH
+            """
+            solution = []
+            x = parent[n]
+            while (x != (None, None)):
+                solution.append(x[1])
+                x = parent[x[0]]
+
+            solution.reverse()
+            return solution
+
+        moveGen = problem.getSuccessors(n)
+        for m in moveGen:
+            if m[0] not in cost:
+                cost[m[0]] = cost[n] + m[2]
+                parent[m[0]] = (n, m[1])
+                frontier.push(m[0], cost[m[0]])
+            elif cost[m[0]] > cost[n] + m[2]:
+                cost[m[0]] = cost[n] + m[2]
+                parent[m[0]] = (n, m[1])
+                frontier.update(m[0], cost[m[0]])
+
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -109,8 +148,69 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    open = util.PriorityQueue()
+    g = {}
+    parent = {}
+    f = {}
+    closed = set()
+    startNode = problem.getStartState()
+    open.push(startNode, 1)
+    parent[startNode] = (None, None) #parent, direction
+    g[startNode] = 0
+    f[startNode] = g[startNode] + heuristic(startNode, problem)
+    """
+        PROPAGATE IMPROVEMENT
+    """ 
+    def propagateImprovement(m):
+        move = problem.getSuccessors(m[0])
+        for x in move:
+            g1 = g.setdefault(m)
+            if g1 == None : g1 = float('inf')
+            k2 = x[2]
+            g2 = g.setdefault(x[0])
+            if g2 == None : g2 = float('inf')
+            if(g1 + k2 < g2):
+                parent[x[0]] = (m[0], x[1])
+                g[x[0]] = g1 + k2
+                f[x[0]] = g[x[0]] + heuristic(x[0], problem)
 
+                if x[0] in closed:
+                    propagateImprovement(x)
+
+    while (not open.isEmpty()):
+        n = open.pop()
+        closed.add(n)
+
+        if (problem.isGoalState(n)):
+            """
+                RECONSTRUCT PATH
+            """
+            solution = []
+            x = parent[n]
+            while (x!= (None, None)):
+                solution.append(x[1])
+                x = parent[x[0]]
+            
+            solution.reverse()
+            return solution
+        
+        MoveGen = problem.getSuccessors(n)
+        for m in MoveGen:
+            g1 = g.setdefault(n)
+            if g1 == None : g1 = float('inf')
+            k = m[2]
+            g2 = g.setdefault(m[0])
+            if g2 == None : g2 = float('inf')
+            if (g1 + k < g2):
+                parent[m[0]] = (n, m[1])
+                g[m[0]] = g1 + k
+                f[m[0]] = g[m[0]] + heuristic(m[0], problem)
+
+                if (m[0] in open.heap): continue
+                if (m[0] in closed): propagateImprovement(m)
+                else: open.push(m[0], f[m[0]])
+
+    return []
 
 # Abbreviations
 bfs = breadthFirstSearch
