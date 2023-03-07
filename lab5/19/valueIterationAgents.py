@@ -45,7 +45,16 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
-        
+        for i in range(self.iterations):
+            for state in self.mdp.getStates():
+                Arr = util.Counter()
+                for action in self.mdp.getPossibleActions(state):
+                    summation = 0
+                    for x in self.mdp.getTransitionStatesAndProbs(state, action):
+                        summation = summation + x[1]*(self.mdp.getReward(state, action, x[0]) + discount*self.values[x[0]])
+                    Arr[action] = summation
+
+                self.values[state] = Arr[Arr.argMax()] if Arr else 0.0
 
 
     def getValue(self, state):
@@ -61,7 +70,11 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        summation = 0
+        for x in self.mdp.getTransitionStatesAndProbs(state, action):
+            summation = summation + x[1]*(self.mdp.getReward(state, action, x[0]) + self.discount*self.values[x[0]])
+      
+        return summation
 
     def computeActionFromValues(self, state):
         """
@@ -73,7 +86,14 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        Arr = util.Counter()
+        for action in self.mdp.getPossibleActions(state):
+            summation = 0
+            for x in self.mdp.getTransitionStatesAndProbs(state, action):
+                summation = summation + x[1]*(self.mdp.getReward(state, action, x[0]) + self.discount*self.values[x[0]])
+            Arr[action] = summation
+
+        return Arr.argMax() if Arr else None
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
